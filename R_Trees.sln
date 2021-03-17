@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31025.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "R_Trees", "R_Trees\R_Trees.vcxproj", "{CD07E759-1728-4132-83D2-8AAA76D4C849}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Debug|x64.ActiveCfg = Debug|x64
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Debug|x64.Build.0 = Debug|x64
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Debug|x86.ActiveCfg = Debug|Win32
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Debug|x86.Build.0 = Debug|Win32
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Release|x64.ActiveCfg = Release|x64
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Release|x64.Build.0 = Release|x64
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Release|x86.ActiveCfg = Release|Win32
+		{CD07E759-1728-4132-83D2-8AAA76D4C849}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {72F43884-EC1A-47BE-9AD3-41E6E0B4B53D}
+	EndGlobalSection
+EndGlobal
