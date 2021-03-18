@@ -6,9 +6,9 @@ Offset::Offset()
 {
 }
 
-Offset::Offset(std::streamoff offset)
+Offset::Offset(int64_t off)
 	:
-	offset(offset)
+	offset(off)
 {
 }
 
@@ -17,7 +17,22 @@ Offset Offset::operator+(int other) const
 	return Offset(offset + other);
 }
 
-int64_t Offset::getVal() const
+Offset Offset::operator-(int other) const
+{
+	return offset - other;
+}
+
+bool Offset::operator==(const Offset& other) const
+{
+	return offset == other.offset;
+}
+
+bool Offset::operator<(const Offset& other) const
+{
+	return offset < other.offset;
+}
+
+int64_t Offset::get() const
 {
 	return offset;
 }
