@@ -1,8 +1,9 @@
 #pragma once
 #include "Point.h"
-class Rect
+struct Rect
 {
 public:
+	Rect() = default;
 	Rect(Point downLeft, Point upRight);
 	Point getDownLeft() const;
 	Point getUpRight() const;
