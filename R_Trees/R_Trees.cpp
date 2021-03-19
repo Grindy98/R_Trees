@@ -1,33 +1,42 @@
 
 #include <iostream>
 #include <chrono>
-#include "Point.h"
-#include "Rect.h"
+#include "Node.h"
 
 
 int main(){
     using namespace std;
 
-    Point x(3, 1), y(4, 2), z(5, 5);
-    Point w(3.5, 4);
-    Rect a(x, y), b(y, z);
-    cout << a.getArea() << " " << a.contains(w) << " " << b.contains(w) << endl;
-    cout << b.extend(x).getDownLeft().x << " " << b.extend(x).getDownLeft().y << " ";
-    cout << b.extend(x).getUpRight().x << " " << b.extend(x).getUpRight().y << endl;
-    cout << a.getMinExtraAreaToCover(z) << " " << a.getMinExtraAreaToCover(x) << " ";
-    cout << a.getMinExtraAreaToCover(w) << endl;
+    Node n = Node(2, true, 3);
+    Rect a({0, 1}, {2, 3});
+    Rect b({4, 5}, {6, 7});
+    n.childrenBB[0] = a;
+    n.childrenBB[1] = b;
+    n.childrenBB[2] = a;
+    
+    n.shapeDataOffset[0] = Offset(0);
+    n.shapeDataOffset[1] = Offset(1);
+    n.shapeDataOffset[2] = Offset(2);
 
-    double myDoubles[4] = {1, 2, 4, 3};
-    char* myArr = (char*)myDoubles;
-    Point p1 = *(Point*)(myArr);
-    Point p2 = *(Point*)(myArr + sizeof(Point));
-    cout << p1.x << " " << p1.y << " " << p2.x << " " << p2.y << endl; 
-    Point* myPoints = (Point*)myDoubles;
-    cout << myPoints[0].x << " " << myPoints[0].y << " " << myPoints[1].x << " " << myPoints[1].y << endl;
+    auto res = Node::serialize(n);
+    auto nodeRes = Node::deserialize(res, n.degree);
+    
+    for (int i = 0; i < nodeRes->arrSize; i++) {
+        cout << nodeRes->childrenBB[i].getDownLeft().x << ", ";
+        cout << nodeRes->childrenBB[i].getDownLeft().y << " | ";
+        cout << nodeRes->childrenBB[i].getUpRight().x << ", ";
+        cout << nodeRes->childrenBB[i].getUpRight().y << endl;
+    } 
+    cout << endl << "Shp" << endl;
+    for (int i = 0; i < nodeRes->shapeDataOffset.size(); i++) {
+        cout << hex << nodeRes->shapeDataOffset[i].get() << ", ";
+    }   
+    cout << endl << "children" << endl;
+    for (int i = 0; i < nodeRes->childrenOffset.size(); i++) {
+        cout << hex << nodeRes->childrenOffset[i].get() << ", ";
+    }
+    cout << endl;
 
-    p1 = (*(Rect*)(myDoubles)).getDownLeft();
-    p2 = (*(Rect*)(myDoubles)).getUpRight();
-    cout << p1.x << " " << p1.y << " " << p2.x << " " << p2.y << endl;
     system("pause");
 
     return 0;
