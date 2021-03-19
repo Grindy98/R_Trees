@@ -2,7 +2,7 @@
 
 Offset::Offset()
 	:
-	offset(0x0)
+	offset(-1)
 {
 }
 
@@ -19,7 +19,7 @@ Offset Offset::operator+(int other) const
 
 Offset Offset::operator-(int other) const
 {
-	return offset - other;
+	return Offset(offset - other);
 }
 
 bool Offset::operator==(const Offset& other) const
@@ -39,5 +39,5 @@ int64_t Offset::get() const
 
 bool Offset::notNull() const
 {
-	return offset != 0x0;
+	return offset != -1;
 }

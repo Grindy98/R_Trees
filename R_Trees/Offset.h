@@ -6,7 +6,7 @@ class Offset
 {
 public:
 	Offset();
-	Offset(int64_t off);
+	explicit Offset(int64_t off);
 
 	Offset operator+(int other) const;
 	Offset operator-(int other) const;
