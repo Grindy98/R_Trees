@@ -7,7 +7,7 @@
 class Node
 {
 public:
-
+	friend int main();
 	static std::shared_ptr<Node> deserialize(const std::vector<char>& bytes, unsigned degree);
 	static std::vector<char> serialize(const Node& node);
 	static unsigned byteSize(unsigned degree);
@@ -19,7 +19,7 @@ private:
 	std::vector<Rect> childrenBB;
 
 	std::vector<Offset> childrenOffset;
-	std::vector<Offset> ShapeDataOffset;
+	std::vector<Offset> shapeDataOffset;
 
 	struct serializeHeader {
 		unsigned isLeaf : 1;
