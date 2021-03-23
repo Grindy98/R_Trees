@@ -8,6 +8,7 @@ using namespace std;
 class Node
 {
 public:
+	friend int main();
 	Node(unsigned degree, bool isLeaf);
 
 	static shared_ptr<Node> deserialize(const vector<char>& bytes, unsigned degree);
@@ -18,6 +19,8 @@ public:
 	vector<int> searchColliding(Rect r) const;
 
 	pair<Rect*, Offset> getChild(int index);
+	int getArrSize();
+
 	void insert(Rect rectToInsert, Offset offsetToInsert);
 	void insert(Point pointToInsert, Offset offsetToInsert);
 
@@ -26,7 +29,7 @@ public:
 	const unsigned Degree;
 	const bool IsLeaf;
 private:
-	unsigned arrSize;
+	int arrSize;
 	vector<Rect> childrenBB;
 
 	vector<Offset> childrenOrDataOffset;
@@ -37,6 +40,6 @@ private:
 		unsigned isLeaf : 1;
 		unsigned arrSize : 31;
 	};
-	Node(unsigned degree, bool isLeaf, unsigned arrSize);
+	Node(unsigned degree, bool isLeaf, int arrSize);
 };
 

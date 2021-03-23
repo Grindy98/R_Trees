@@ -26,10 +26,10 @@ shared_ptr<Node> Node::deserialize(const vector<char>& bytes, unsigned degree)
 
 vector<char> Node::serialize(const Node& node)
 {
-	assert(node.arrSize <= 2 * node.Degree);
+	assert((unsigned)node.arrSize <= 2 * node.Degree);
 	vector<char> bytes(byteSize(node.Degree));
 	char* p = bytes.data();
-	serializeHeader header = { node.IsLeaf ? 1u : 0u, node.arrSize };
+	serializeHeader header = { node.IsLeaf ? 1u : 0u, (unsigned)node.arrSize };
 	*reinterpret_cast<serializeHeader*>(p) = header;
 	p += sizeof(serializeHeader);
 
@@ -54,7 +54,7 @@ vector<int> Node::searchColliding(Point p) const
 {
 	vector<int> colliding;
 	colliding.reserve(2 * Degree + 1);
-	for (unsigned i = 0; i < arrSize; i++) {
+	for (int i = 0; i < arrSize; i++) {
 		if (childrenBB[i].contains(p)) {
 			colliding.push_back(i);
 		}
@@ -66,7 +66,7 @@ vector<int> Node::searchColliding(Rect r) const
 {
 	vector<int> colliding;
 	colliding.reserve(2 * Degree + 1);
-	for (unsigned i = 0; i < arrSize; i++) {
+	for (int i = 0; i < arrSize; i++) {
 		if (childrenBB[i].intersects(r)) {
 			colliding.push_back(i);
 		}
@@ -80,9 +80,14 @@ pair<Rect*, Offset> Node::getChild(int index)
 	return make_pair(&childrenBB[index], childrenOrDataOffset[index]);
 }
 
+int Node::getArrSize()
+{
+	return arrSize;
+}
+
 void Node::insert(Rect rectToInsert, Offset offsetToInsert)
 {
-	assert(arrSize <= 2 * Degree);
+	assert((unsigned)arrSize <= 2 * Degree);
 	childrenBB[arrSize] = rectToInsert;
 	childrenOrDataOffset[arrSize] = offsetToInsert;
 	arrSize++;
@@ -186,12 +191,12 @@ pair<int, int> Node::pickSeedsForSplit() const
 	return maxPair;
 }
 
-Node::Node(unsigned degree, bool isLeaf, unsigned arrSize)
+Node::Node(unsigned degree, bool isLeaf, int arrSize)
 	:
 	Degree(degree),
 	IsLeaf(isLeaf),
 	arrSize(arrSize),
 	childrenBB(2 * degree + 1),
-	childrenOrDataOffset(2 * degree + 1),
+	childrenOrDataOffset(2 * degree + 1)
 {
 }
