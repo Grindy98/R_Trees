@@ -32,6 +32,11 @@ bool Offset::operator<(const Offset& other) const
 	return offset < other.offset;
 }
 
+bool Offset::operator<=(const Offset& other) const
+{
+	return offset <= other.offset;
+}
+
 int64_t Offset::get() const
 {
 	return offset;

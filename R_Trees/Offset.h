@@ -12,6 +12,7 @@ public:
 	Offset operator-(int other) const;
 	bool operator==(const Offset& other) const;
 	bool operator<(const Offset& other) const;
+	bool operator<=(const Offset& other) const;
 	int64_t get() const;
 	bool notNull() const;
 private:
