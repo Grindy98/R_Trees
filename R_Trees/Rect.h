@@ -10,6 +10,7 @@ public:
 
 	bool contains(const Point& inPoint) const;
 	bool contains(const Rect& inRect) const;
+	bool intersects(const Rect& xRect) const;
 
 	Rect extend(const Point& outPoint) const;
 	Rect extend(const Rect& outRect) const;

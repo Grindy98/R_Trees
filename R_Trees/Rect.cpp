@@ -30,6 +30,12 @@ bool Rect::contains(const Rect& inRect) const
 	return contains(inRect.downLeft) && contains(inRect.upRight);
 }
 
+bool Rect::intersects(const Rect& xRect) const
+{
+	// If any extreme point is included, this intersects xRect
+	return contains(xRect.downLeft) || contains(xRect.upRight);
+}
+
 Rect Rect::extend(const Point& outPoint) const
 {
 	Point newDL(downLeft), newUR(upRight);
