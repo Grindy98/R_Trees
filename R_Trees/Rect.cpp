@@ -33,7 +33,9 @@ bool Rect::contains(const Rect& inRect) const
 bool Rect::intersects(const Rect& xRect) const
 {
 	// If any extreme point is included, this intersects xRect
-	return contains(xRect.downLeft) || contains(xRect.upRight);
+	bool dlCond = xRect.upRight.x >= downLeft.x && xRect.upRight.y >= downLeft.y;
+	bool urCond = xRect.downLeft.x <= upRight.x && xRect.downLeft.y <= upRight.y;
+	return dlCond || urCond;
 }
 
 Rect Rect::extend(const Point& outPoint) const
