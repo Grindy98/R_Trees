@@ -1,5 +1,6 @@
 #include "Node.h"
 #include <cassert>
+#include <limits>
 
 Node::Node(unsigned degree, bool isLeaf)
 	:
@@ -74,13 +75,42 @@ vector<int> Node::searchColliding(Rect r) const
 	return colliding;
 }
 
+int Node::searchFirstIncluded(Rect r) const
+{
+	for (int i = 0; i < arrSize; i++) {
+		if (childrenBB[i].contains(r)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int Node::searchMinBBExtension(Rect r) const
+{
+	double minArea = numeric_limits<double>::max();
+	int minInd = -1;
+	for (int i = 0; i < arrSize; i++) {
+		double currArea = childrenBB[i].getMinExtraAreaToCover(r);
+		if (currArea < minArea) {
+			minArea = currArea;
+			minInd = i;
+		}
+	}
+	return minInd;
+}
+
 pair<Rect*, Offset> Node::getChild(int index)
 {
 	assert(index < arrSize);
 	return make_pair(&childrenBB[index], childrenOrDataOffset[index]);
 }
 
-int Node::getArrSize()
+bool Node::isFull() const
+{
+	return arrSize == 2 * Degree + 1;
+}
+
+int Node::getArrSize() const
 {
 	return arrSize;
 }
