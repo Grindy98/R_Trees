@@ -18,8 +18,13 @@ public:
 	vector<int> searchColliding(Point p) const;
 	vector<int> searchColliding(Rect r) const;
 
+	int searchFirstIncluded(Rect r) const;
+
+	int searchMinBBExtension(Rect r) const;
+
 	pair<Rect*, Offset> getChild(int index);
-	int getArrSize();
+	int getArrSize() const;
+	bool isFull() const;
 
 	void insert(Rect rectToInsert, Offset offsetToInsert);
 	void insert(Point pointToInsert, Offset offsetToInsert);

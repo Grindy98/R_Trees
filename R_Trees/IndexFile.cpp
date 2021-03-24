@@ -26,9 +26,9 @@ IndexFile::IndexFile(string existingFile)
 	}
 }
 
-IndexFile::IndexFile(string fileToCreate, int degree)
+IndexFile::IndexFile(string fileToCreate, int degree, char dataFileType)
 	:
-	header{(uint32_t)degree}
+	header{(uint32_t)degree, dataFileType}
 {
 	// Open and read from idx file the header and open the existing tag file
 	indexStream.open(fileToCreate + ".idx", ios::in | ios::out | ios::binary | ios::trunc);
@@ -38,7 +38,7 @@ IndexFile::IndexFile(string fileToCreate, int degree)
 		throw exception("Error creating index files!\n");
 	}
 	indexStream.write((char*)&header, sizeof(Header));
-	indexFileSize = getStartOffset();
+	indexFileSize = Offset(sizeof(Header));
 }
 
 IndexFile::~IndexFile()
@@ -60,7 +60,7 @@ IndexFile::~IndexFile()
 	tagStream.close();
 }
 
-shared_ptr<Node> IndexFile::readNode(const Node& node, Offset off)
+shared_ptr<Node> IndexFile::readNode(Offset off)
 {
 	// Check for offset alignment
 	assert(off < indexFileSize);
@@ -73,35 +73,40 @@ shared_ptr<Node> IndexFile::readNode(const Node& node, Offset off)
 	return Node::deserialize(buf, header.degree);
 }
 
-void IndexFile::writeNode(const Node& node, Offset off)
+void IndexFile::overwriteNode(const Node& node, Offset off)
 {
 	// Assert alignment and position
-	assert(off <= indexFileSize);
+	assert(off < indexFileSize);
 	unsigned size = Node::byteSize(header.degree);
 	assert((off.get() - sizeof(Header)) % size == 0);
-	if (off == indexFileSize) {
-		// When writing past eof
-		indexFileSize = Offset(indexFileSize + size);
-	}
 
 	indexStream.seekp(off.get(), ios::beg);
 	vector<char> buf = Node::serialize(node);
 	indexStream.write(buf.data(), size);
 }
 
-Offset IndexFile::getEOFOffset() const
+Offset IndexFile::appendNewNode(const Node& node)
 {
-	return Offset();
-}
+	unsigned size = Node::byteSize(header.degree);
+	// When writing past eof
+	indexFileSize = Offset(indexFileSize + size);
 
-Offset IndexFile::getStartOffset() const
-{
-	return Offset(sizeof(Header));
+	indexStream.seekp(0, ios::end);
+	vector<char> buf = Node::serialize(node);
+	indexStream.write(buf.data(), size);
+	Offset ret = indexFileSize;
+	indexFileSize = Offset(indexFileSize + size);
+	return ret;
 }
 
 const IndexFile::Header& IndexFile::getHeader() const
 {
 	return header;
+}
+
+Offset IndexFile::getRootOffset() const
+{
+	return Offset(sizeof(Header));
 }
 
 vector<string> IndexFile::getTags() const
