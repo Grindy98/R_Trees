@@ -11,18 +11,19 @@ class IndexFile
 public:
 	struct Header {
 		uint32_t degree;
+		char dataFileType;
 	};
 
 	IndexFile(string existingFile);
-	IndexFile(string fileToCreate, int degree);
+	IndexFile(string fileToCreate, int degree, char dataFileType);
 	~IndexFile();
 
-	shared_ptr<Node> readNode(const Node& node, Offset off);
-	void writeNode(const Node& node, Offset off);
-
-	Offset getEOFOffset() const;
-	Offset getStartOffset() const;
+	shared_ptr<Node> readNode(Offset off);
+	void overwriteNode(const Node& node, Offset off);
+	Offset appendNewNode(const Node& node);
+	
 	const Header& getHeader() const;
+	Offset getRootOffset() const;
 
 	vector<string> getTags() const;
 	void insertTag(string tag);
