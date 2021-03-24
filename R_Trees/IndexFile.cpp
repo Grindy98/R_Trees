@@ -1,5 +1,6 @@
 #include "IndexFile.h"
 #include <cassert>
+#include <sstream>
 
 IndexFile::IndexFile(string existingFile)
 {
@@ -32,10 +33,13 @@ IndexFile::IndexFile(string fileToCreate, int degree, char dataFileType)
 {
 	// Open and read from idx file the header and open the existing tag file
 	indexStream.open(fileToCreate + ".idx", ios::in | ios::out | ios::binary | ios::trunc);
-	tagStream.open(fileToCreate + ".idxt", ios::in | ios::out | ios::app | ios::trunc);
+	tagStream.open(fileToCreate + ".idxt", ios::in | ios::out | ios::trunc);
 
 	if (!indexStream.is_open() || !tagStream.is_open()) {
-		throw exception("Error creating index files!\n");
+		stringstream ss;
+		ss << "Error creating index files(Index file: " << indexStream.is_open() <<
+			", TagFile: " << tagStream.is_open() << ")" << endl;
+		throw exception(ss.str().c_str());
 	}
 	indexStream.write((char*)&header, sizeof(Header));
 	indexFileSize = Offset(sizeof(Header));
@@ -47,9 +51,8 @@ IndexFile::~IndexFile()
 
 	tagStream.seekg(0, ios::beg);
 	unsigned i = 0;
-	while (!tagStream.eof()) {
-		string tag;
-		getline(tagStream, tag);
+	string tag;
+	while (!getline(tagStream, tag).eof()) {
 		assert(tagArray[i] == tag);
 		i++;
 	}
@@ -73,6 +76,19 @@ shared_ptr<Node> IndexFile::readNode(Offset off)
 	return Node::deserialize(buf, header.degree);
 }
 
+shared_ptr<Node> IndexFile::readRoot()
+{
+	if (sizeof(Header) >= indexFileSize.get()) {
+		return nullptr;
+	}
+	
+	unsigned size = Node::byteSize(header.degree);
+	vector<char> buf(size);
+	indexStream.seekg(sizeof(Header), ios::beg);
+	indexStream.read(buf.data(), size);
+	return Node::deserialize(buf, header.degree);
+}
+
 void IndexFile::overwriteNode(const Node& node, Offset off)
 {
 	// Assert alignment and position
@@ -88,8 +104,6 @@ void IndexFile::overwriteNode(const Node& node, Offset off)
 Offset IndexFile::appendNewNode(const Node& node)
 {
 	unsigned size = Node::byteSize(header.degree);
-	// When writing past eof
-	indexFileSize = Offset(indexFileSize + size);
 
 	indexStream.seekp(0, ios::end);
 	vector<char> buf = Node::serialize(node);
