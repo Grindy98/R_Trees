@@ -19,6 +19,7 @@ public:
 	~IndexFile();
 
 	shared_ptr<Node> readNode(Offset off);
+	shared_ptr<Node> readRoot();
 	void overwriteNode(const Node& node, Offset off);
 	Offset appendNewNode(const Node& node);
 	

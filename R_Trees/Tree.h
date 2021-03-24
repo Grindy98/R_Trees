@@ -12,8 +12,8 @@ public:
 
 
 private:
-	unique_ptr<DataFile> dataf;
 	IndexFile idxf;
+	unique_ptr<DataFile> dataf;
 
 	void createTree();
 

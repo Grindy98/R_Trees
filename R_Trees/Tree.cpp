@@ -21,7 +21,7 @@ Tree::Tree(unique_ptr<DataFile> dataf, string indexFileName)
 void Tree::insert(pair<Rect, Offset> newEntry)
 {
 	// Read root from file 
-	auto root = idxf.readNode(idxf.getRootOffset());
+	auto root = idxf.readRoot();
 	if (root == nullptr) {
 		// Empty tree, we have to create the node
 		Node n = Node(idxf.getHeader().degree, true);
@@ -94,6 +94,7 @@ void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>
 		// If leaf node -- end of search, insert then return
 		if (pathid.parent->IsLeaf) {
 			pathid.parent->insert(newEntry.first, newEntry.second);
+			pathid.setModified();
 			return;
 		}
 		int insertI = pathid.parent->searchFirstIncluded(newEntry.first);
@@ -108,7 +109,9 @@ void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>
 		pathid.childIndex = insertI;
 		// Read child from file
 		Offset childOff = pathid.parent->getChild(insertI).second;
-		insertPath.push(PathIdentifier(idxf.readNode(childOff), -1));
+		auto childNode = idxf.readNode(childOff);
+		assert(childNode->getArrSize() >= childNode->Degree);
+		insertPath.push(PathIdentifier(childNode, -1));
 	}
 }
 

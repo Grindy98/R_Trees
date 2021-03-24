@@ -87,7 +87,7 @@ int Node::searchFirstIncluded(Rect r) const
 
 int Node::searchMinBBExtension(Rect r) const
 {
-	double minArea = numeric_limits<double>::max();
+	double minArea = numeric_limits<double>::infinity();
 	int minInd = -1;
 	for (int i = 0; i < arrSize; i++) {
 		double currArea = childrenBB[i].getMinExtraAreaToCover(r);
@@ -96,6 +96,7 @@ int Node::searchMinBBExtension(Rect r) const
 			minInd = i;
 		}
 	}
+	assert(minInd != -1);
 	return minInd;
 }
 
@@ -172,12 +173,12 @@ vector<pair<shared_ptr<Node>, Rect>> Node::split() const
 		}
 		// Find the maximum discrepancy for each of them
 		int maxInd = -1;
-		double maxDiscrepancy = 0.0;
+		double maxDiscrepancy = -1.0;
 		for (int i : remainingNodes) {
-			double currDiscrepancy = childrenBB[i].getMinExtraAreaToCover(r1);
-			currDiscrepancy -= childrenBB[i].getMinExtraAreaToCover(r2);
+			double currDiscrepancy = r1.getMinExtraAreaToCover(childrenBB[i]);
+			currDiscrepancy -= r2.getMinExtraAreaToCover(childrenBB[i]);
 			// Discrepancy is taken as an abs value -- negative is a flag for r2 > r1
-			if (abs(currDiscrepancy) > abs(maxDiscrepancy)) {
+			if (abs(currDiscrepancy) > maxDiscrepancy) {
 				maxDiscrepancy = currDiscrepancy;
 				maxInd = i;
 			}
@@ -198,26 +199,31 @@ vector<pair<shared_ptr<Node>, Rect>> Node::split() const
 		auto position = lower_bound(remainingNodes.begin(), remainingNodes.end(), maxInd);
 		remainingNodes.erase(position);
 	}
+	assert(n1->arrSize >= Degree);
+	assert(n2->arrSize >= Degree);
 	return {make_pair(n1, r1), make_pair(n2, r2)};
 }
 
 pair<int, int> Node::pickSeedsForSplit() const
 {
 	assert(arrSize >= 2);
-	double maxArea = -1.0;
+	double maxArea = -numeric_limits<double>::infinity();
 	pair<int, int> maxPair = make_pair(-1, -1);
+	vector<double> test;
 	for (int i = 0; i < arrSize; i++) {
 		for (int j = i + 1; j < arrSize; j++)
 		{
 			// Compare for most wasteful pair based on formula
 			Rect currMBB = childrenBB[i].extend(childrenBB[j]);
 			double currArea = currMBB.getArea() - childrenBB[i].getArea() - childrenBB[j].getArea();
+			test.push_back(currArea);
 			if (currArea > maxArea) {
 				maxArea = currArea;
 				maxPair = make_pair(i, j);
 			}
 		}
 	}
+	assert(maxPair != make_pair(-1, -1));
 	return maxPair;
 }
 
