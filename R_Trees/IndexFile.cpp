@@ -66,6 +66,7 @@ IndexFile::~IndexFile()
 shared_ptr<Node> IndexFile::readNode(Offset off)
 {
 	// Check for offset alignment
+	assert(off.notNull());
 	assert(off < indexFileSize);
 	unsigned size = Node::byteSize(header.degree);
 	assert((off.get() - sizeof(Header)) % size  == 0);

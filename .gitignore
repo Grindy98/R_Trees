@@ -366,3 +366,5 @@ R_Trees/R_Trees.vcxproj
 R_Trees/R_Trees.vcxproj.filters
 
 R_Trees.sln
+*.idx
+*.idxt
