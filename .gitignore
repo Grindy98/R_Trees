@@ -368,3 +368,4 @@ R_Trees/R_Trees.vcxproj.filters
 R_Trees.sln
 *.idx
 *.idxt
+/R_Trees/locations.txt
