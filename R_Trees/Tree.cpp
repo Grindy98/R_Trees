@@ -4,13 +4,16 @@
 
 Tree::Tree(unique_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
 	:
+	// Create new tree
 	dataf(move(dataf)),
 	idxf(idxFileNameToCreate, degree, dataf->getDataFileType())
 {
+	createTree();
 }
 
 Tree::Tree(unique_ptr<DataFile> dataf, string indexFileName)
 	:
+	// Open existing tree
 	dataf(move(dataf)),
 	idxf(indexFileName)
 {
@@ -159,6 +162,17 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
 		}
 	}
 	return found;
+}
+
+void Tree::createTree()
+{
+	unsigned size = dataf->getNumberOfElements();
+	for (unsigned i = 0; i < size; i++)
+	{
+		auto entry = dataf->getEntry(Offset(i));
+		// Add entry to tree
+		insert(make_pair(entry.BB, Offset(i)));
+	}
 }
 
 void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>& insertPath)
