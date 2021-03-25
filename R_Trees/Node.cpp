@@ -199,8 +199,8 @@ vector<pair<shared_ptr<Node>, Rect>> Node::split() const
 		auto position = lower_bound(remainingNodes.begin(), remainingNodes.end(), maxInd);
 		remainingNodes.erase(position);
 	}
-	assert(n1->arrSize >= Degree);
-	assert(n2->arrSize >= Degree);
+	assert(n1->arrSize >= (unsigned)Degree);
+	assert(n2->arrSize >= (unsigned)Degree);
 	return {make_pair(n1, r1), make_pair(n2, r2)};
 }
 
