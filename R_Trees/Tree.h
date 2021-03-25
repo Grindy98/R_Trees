@@ -9,6 +9,8 @@ public:
 	Tree(unique_ptr<DataFile> dataf, string indexFileName);
 
 	void insert(pair<Rect, Offset> newEntry);
+	vector<DataFile::Entry> search(Rect searchBox);
+	vector<DataFile::Entry> search(Point searchCenter, double searchRadius);
 
 
 private:

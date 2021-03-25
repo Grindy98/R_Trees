@@ -1,5 +1,6 @@
 #include "Tree.h"
 #include <cassert>
+#include <algorithm>
 
 Tree::Tree(unique_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
 	:
@@ -85,6 +86,81 @@ void Tree::insert(pair<Rect, Offset> newEntry)
 	}
 }
 
+vector<DataFile::Entry> Tree::search(Rect searchBox)
+{
+	vector<DataFile::Entry> found;
+	stack<shared_ptr<Node>> nodeCheckStack;
+	auto root = idxf.readRoot();
+	if (root == nullptr) {
+		// Empty tree
+		return found;
+	}
+	nodeCheckStack.push(move(root));
+	while (!nodeCheckStack.empty()) {
+		shared_ptr<Node> curr = move(nodeCheckStack.top());
+		nodeCheckStack.pop();
+		// Check which rects overlap
+		for (int i = 0; i < curr->getArrSize(); i++)
+		{
+			auto currChild = curr->getChild(i);
+			if (currChild.first->intersects(searchBox)) {
+				if (curr->IsLeaf) {
+					// If leaf, just read entry from datafile and add it to found
+					auto entry = dataf->getEntry(currChild.second);
+					found.push_back(entry);
+				}
+				else {
+					// If not leaf, read from file and push child to stack 
+					auto newChild = idxf.readNode(currChild.second);
+					nodeCheckStack.push(newChild);
+				}
+			}
+		}
+	}
+	return found;
+}
+
+vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
+{
+	vector<DataFile::Entry> found;
+	stack<shared_ptr<Node>> nodeCheckStack;
+	auto root = idxf.readRoot();
+	if (root == nullptr) {
+		// Empty tree
+		return found;
+	}
+	nodeCheckStack.push(move(root));
+	while (!nodeCheckStack.empty()) {
+		shared_ptr<Node> curr = move(nodeCheckStack.top());
+		nodeCheckStack.pop();
+		// Check which rects overlap
+		for (int i = 0; i < curr->getArrSize(); i++)
+		{
+			auto currChild = curr->getChild(i);
+			// Check if the circle intersects the rectangle
+			Point closest = Point();
+			closest.x = std::clamp(searchCenter.x, currChild.first->getDownLeft().x,
+				currChild.first->getUpRight().x);
+			closest.y = std::clamp(searchCenter.y, currChild.first->getDownLeft().y,
+				currChild.first->getUpRight().y);
+			closest = closest - searchCenter;
+			if (closest.x * closest.x + closest.y * closest.y <= searchRadius * searchRadius) {
+				if (curr->IsLeaf) {
+					// If leaf, just read entry from datafile and add it to found
+					auto entry = dataf->getEntry(currChild.second);
+					found.push_back(entry);
+				}
+				else {
+					// If not leaf, read from file and push child to stack 
+					auto newChild = idxf.readNode(currChild.second);
+					nodeCheckStack.push(newChild);
+				}
+			}
+		}
+	}
+	return found;
+}
+
 void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>& insertPath)
 {
 	while (true) {
@@ -110,7 +186,7 @@ void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>
 		// Read child from file
 		Offset childOff = pathid.parent->getChild(insertI).second;
 		auto childNode = idxf.readNode(childOff);
-		assert(childNode->getArrSize() >= childNode->Degree);
+		assert(childNode->getArrSize() >= (int)childNode->Degree);
 		insertPath.push(PathIdentifier(childNode, -1));
 	}
 }
