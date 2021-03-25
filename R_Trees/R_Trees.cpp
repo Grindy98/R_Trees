@@ -28,6 +28,9 @@ int main() {
             //}
             t.insert(make_pair(Rect(p1, p1), Offset(-1)));
         }
+
+        auto res = t.search({ 0.0, 0.0 }, 1);
+        cout << res.size();
     }
     catch (const exception& e)
     {
