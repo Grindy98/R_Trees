@@ -20,11 +20,12 @@ IndexFile::IndexFile(string existingFile)
 	indexStream.read((char*)&header, sizeof(Header));
 
 	// Read tags
-	while (!tagStream.eof()) {
+	while (tagStream) {
 		string tag;
 		getline(tagStream, tag);
 		tagArray.push_back(tag);
 	}
+	tagStream.clear();
 }
 
 IndexFile::IndexFile(string fileToCreate, int degree, char dataFileType)
@@ -52,10 +53,11 @@ IndexFile::~IndexFile()
 	tagStream.seekg(0, ios::beg);
 	unsigned i = 0;
 	string tag;
-	while (!getline(tagStream, tag).eof()) {
+	while (getline(tagStream, tag)) {
 		assert(tagArray[i] == tag);
 		i++;
 	}
+	tagStream.clear();
 	for (; i < tagArray.size(); i++) {
 		// Append new tags
 		tagStream >> tagArray[i];
