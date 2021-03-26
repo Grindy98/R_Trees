@@ -17,13 +17,14 @@ IndexFile::IndexFile(string existingFile)
 	assert(indexFileSize.get() >= sizeof(Header));
 
 	// Read header
+	indexStream.seekg(0, ios::beg);
 	indexStream.read((char*)&header, sizeof(Header));
 
 	// Read tags
 	while (tagStream) {
 		string tag;
 		getline(tagStream, tag);
-		tagArray.push_back(tag);
+		tagArray.insert(tag);
 	}
 	tagStream.clear();
 }
@@ -50,17 +51,11 @@ IndexFile::~IndexFile()
 {
 	indexStream.close();
 
-	tagStream.seekg(0, ios::beg);
-	unsigned i = 0;
-	string tag;
-	while (getline(tagStream, tag)) {
-		assert(tagArray[i] == tag);
-		i++;
-	}
-	tagStream.clear();
-	for (; i < tagArray.size(); i++) {
-		// Append new tags
-		tagStream >> tagArray[i];
+	// Set tags to file
+	tagStream.seekp(0, ios::beg);
+	for (string tag : tagArray) {
+		tag += "\n";
+		tagStream << tag;
 	}
 	tagStream.close();
 }
@@ -126,15 +121,17 @@ Offset IndexFile::getRootOffset() const
 	return Offset(sizeof(Header));
 }
 
-vector<string> IndexFile::getTags() const
+set<string> IndexFile::getTags() const
 {
 	return tagArray;
 }
 
-void IndexFile::insertTag(string tag)
+void IndexFile::insertTagIfUnique(string tag)
 {
-	tagArray.push_back(tag);
-	for (string x : tagArray) {
-		assert(tag != x);
-	}
+	tagArray.insert(tag);
+}
+
+bool IndexFile::doesTagExist(string tag) const
+{
+	return tagArray.find(tag) != tagArray.end();
 }

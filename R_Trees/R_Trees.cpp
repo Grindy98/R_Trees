@@ -10,8 +10,8 @@
 int main(){
     using namespace std;
 
-    unique_ptr<DataFile> dataf = make_unique<TextFile>("locations.txt");
-    Tree t(move(dataf), "indexf", 5);
+    shared_ptr<DataFile> dataf = make_shared<TextFile>("locations.txt");
+    Tree t(dataf, "indexf");
     // Radius is NOT in Km, but in pseudo-degrees
     // We have to use some sort of function to convert to Km from this representation
 
@@ -24,10 +24,17 @@ int main(){
 
     auto entry = dataf->getEntry(Offset(unif(re)));
 
-    auto res = t.search(entry.BB.getDownLeft(), 0.02);
+    double radius = 0.02;
+    auto res = t.search(entry.BB.getDownLeft(), radius, "hospital-health-care-facility");
 
-    for (auto entry : res) {
+    cout << "Original point is: " << 
+        entry.BB.getDownLeft().x << ", " << entry.BB.getDownLeft().y << endl;
+    cout << "Radius of search is: " << radius << endl;
+    cout << endl;
 
+    for (const auto& entry : res) {
+        cout << entry.name << ", " << entry.tag << " | " <<
+            entry.BB.getDownLeft().x << ", " << entry.BB.getDownLeft().y << endl;
     }
 
     system("pause");

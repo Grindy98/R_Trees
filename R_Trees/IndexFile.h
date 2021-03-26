@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <fstream>
+#include <set>
 #include "Node.h"
 using namespace std;
 
@@ -26,12 +27,13 @@ public:
 	const Header& getHeader() const;
 	Offset getRootOffset() const;
 
-	vector<string> getTags() const;
-	void insertTag(string tag);
+	set<string> getTags() const;
+	void insertTagIfUnique(string tag);
+	bool doesTagExist(string tag) const;
 private:
 	Header header;
 	fstream indexStream;
 	Offset indexFileSize;
 	fstream tagStream;
-	vector<string> tagArray;
+	set<string> tagArray;
 };
