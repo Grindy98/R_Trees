@@ -2,16 +2,19 @@
 #include <cassert>
 #include <algorithm>
 
-Tree::Tree(unique_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
+Tree::Tree(shared_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
 	:
-	dataf(move(dataf)),
+	// Create new tree
+	dataf(dataf),
 	idxf(idxFileNameToCreate, degree, dataf->getDataFileType())
 {
+	createTree();
 }
 
-Tree::Tree(unique_ptr<DataFile> dataf, string indexFileName)
+Tree::Tree(shared_ptr<DataFile> dataf, string indexFileName)
 	:
-	dataf(move(dataf)),
+	// Open existing tree
+	dataf(dataf),
 	idxf(indexFileName)
 {
 	if (idxf.getHeader().dataFileType != dataf->getDataFileType()) {
@@ -159,6 +162,34 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
 		}
 	}
 	return found;
+}
+
+vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, string tag)
+{
+	if (!idxf.doesTagExist(tag)) {
+		throw exception("Tag does not exist!\n");
+	}
+	auto allTags = search(searchCenter, searchRadius);
+	vector<DataFile::Entry> ret;
+	for (const auto& entry : allTags) {
+		if (entry.tag == tag) {
+			ret.push_back(entry);
+		}
+	}
+	return ret;
+}
+
+void Tree::createTree()
+{
+	unsigned size = dataf->getNumberOfElements();
+	for (unsigned i = 0; i < size; i++)
+	{
+		auto entry = dataf->getEntry(Offset(i));
+		// Add entry to tree
+		insert(make_pair(entry.BB, Offset(i)));
+		// Add tag if not already added 
+		idxf.insertTagIfUnique(entry.tag);
+	}
 }
 
 void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>& insertPath)

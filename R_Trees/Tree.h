@@ -5,17 +5,18 @@
 class Tree
 {
 public:
-	Tree(unique_ptr<DataFile> dataf, string idxFileNameToCreate, int degree);
-	Tree(unique_ptr<DataFile> dataf, string indexFileName);
+	Tree(shared_ptr<DataFile> dataf, string idxFileNameToCreate, int degree);
+	Tree(shared_ptr<DataFile> dataf, string indexFileName);
 
 	void insert(pair<Rect, Offset> newEntry);
 	vector<DataFile::Entry> search(Rect searchBox);
 	vector<DataFile::Entry> search(Point searchCenter, double searchRadius);
+	vector<DataFile::Entry> search(Point searchCenter, double searchRadius, string tag);
 
 
 private:
 	IndexFile idxf;
-	unique_ptr<DataFile> dataf;
+	shared_ptr<DataFile> dataf;
 
 	void createTree();
 
