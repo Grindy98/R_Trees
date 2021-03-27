@@ -7,6 +7,7 @@ class ShapeFile : public DataFile
 {
 public:
 	ShapeFile(string dirName);
+	~ShapeFile();
 	// Inherited via DataFile
 	virtual Entry getEntry(Offset off) override;
 	virtual char getDataFileType() const override;

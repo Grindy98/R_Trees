@@ -58,6 +58,16 @@ ShapeFile::ShapeFile(string dirName)
     cout << "Read from directory, opened " << shpHandles.size() << " files!" << endl;
 }
 
+ShapeFile::~ShapeFile()
+{
+    for (auto& handler : shpHandles) {
+        SHPClose(handler);
+    } 
+    for (auto& handler : dbfHandles) {
+        DBFClose(handler);
+    }
+}
+
 DataFile::Entry ShapeFile::getEntry(Offset off)
 {
     assert(Offset(0) <= off && off < IShapeOffset.back());
