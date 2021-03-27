@@ -25,7 +25,7 @@ DataFile::Entry TextFile::getEntry(Offset off)
     std::string s;
     //for performance
     s.reserve(100);
-    textStream.seekg(lineBegins[off.get()]);
+    textStream.seekg(lineBegins[(unsigned)off.get()]);
     getline(textStream, s);
     
     // Tokenize string
@@ -67,7 +67,7 @@ char TextFile::getDataFileType() const
     return 'x';
 }
 
-unsigned TextFile::getNumberOfElements() const
+Offset TextFile::getNumberOfElements() const
 {
-    return lineBegins.size();
+    return Offset(lineBegins.size());
 }

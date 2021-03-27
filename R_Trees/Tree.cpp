@@ -181,8 +181,8 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, st
 
 void Tree::createTree()
 {
-	unsigned size = dataf->getNumberOfElements();
-	for (unsigned i = 0; i < size; i++)
+	int64_t size = dataf->getNumberOfElements().get();
+	for (int64_t i = 0; i < size; i++)
 	{
 		auto entry = dataf->getEntry(Offset(i));
 		// Add entry to tree

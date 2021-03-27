@@ -14,6 +14,6 @@ public:
 	};
 	virtual Entry getEntry(Offset off) = 0;
 	virtual char getDataFileType() const = 0;
-	virtual unsigned getNumberOfElements() const = 0;
+	virtual Offset getNumberOfElements() const = 0;
 };
 
