@@ -63,11 +63,11 @@ DataFile::Entry ShapeFile::getEntry(Offset off)
     assert(Offset(0) <= off && off < IShapeOffset.back());
     // Find which file contains index off
     auto iter = lower_bound(IShapeOffset.begin(), IShapeOffset.end(), off);
-    int index = iter - IShapeOffset.begin();
     if ((*iter).get() != off.get()) {
         // Offset is not start of array -- decrement index
-        index--;
+        iter--;
     }
+    int index = iter - IShapeOffset.begin();
     // Read from the proper files with the correct displacement
     Entry entry;
 
