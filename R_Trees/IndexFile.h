@@ -20,18 +20,20 @@ public:
 	~IndexFile();
 
 	shared_ptr<Node> readNode(Offset off);
-	shared_ptr<Node> readRoot();
+	shared_ptr<Node> getRoot();
+	void setRoot(shared_ptr<Node> newRoot);
 	void overwriteNode(const Node& node, Offset off);
 	Offset appendNewNode(const Node& node);
 	
 	const Header& getHeader() const;
-	Offset getRootOffset() const;
 
 	set<string> getTags() const;
 	void insertTagIfUnique(string tag);
 	bool doesTagExist(string tag) const;
 private:
 	Header header;
+	unsigned nodeSize;
+	shared_ptr<Node> root;
 	fstream indexStream;
 	Offset indexFileSize;
 	fstream tagStream;

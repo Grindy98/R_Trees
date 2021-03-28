@@ -55,7 +55,7 @@ ShapeFile::ShapeFile(string dirName)
             IShapeOffset.push_back(IShapeOffset.back() + nEntities);
         }
     }
-    cout << "Read from directory, opened " << shpHandles.size() << " files!" << endl;
+    std::cout << "Read from directory, opened " << shpHandles.size() << " files!" << endl;
 }
 
 ShapeFile::~ShapeFile()

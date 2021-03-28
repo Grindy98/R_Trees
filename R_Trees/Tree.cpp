@@ -1,6 +1,9 @@
 #include "Tree.h"
 #include <cassert>
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
 
 Tree::Tree(shared_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
 	:
@@ -24,15 +27,8 @@ Tree::Tree(shared_ptr<DataFile> dataf, string indexFileName)
 
 void Tree::insert(pair<Rect, Offset> newEntry)
 {
-	// Read root from file 
-	auto root = idxf.readRoot();
-	if (root == nullptr) {
-		// Empty tree, we have to create the node
-		Node n = Node(idxf.getHeader().degree, true);
-		n.insert(newEntry.first, newEntry.second);
-		idxf.appendNewNode(n);
-		return;
-	}
+	// Get root from file 
+	auto root = idxf.getRoot();
 	stack<PathIdentifier> insertPath;
 	// Add root to the insert path
 	insertPath.push(PathIdentifier(root, -1));
@@ -47,16 +43,16 @@ void Tree::insert(pair<Rect, Offset> newEntry)
 			if (insertPath.empty()) {
 				// Edge case when the root splits
 				// Create empty root in place -- root will NOT be a leaf
-				Node newRoot = Node(idxf.getHeader().degree, false);
+				shared_ptr<Node> newRoot = make_shared<Node>(idxf.getHeader().degree, false);
 
 				// Create 2 new children and append both to the file
 				Offset leftChildOff = idxf.appendNewNode(*splitRes[0].first);
-				newRoot.insert(splitRes[0].second, leftChildOff);
+				newRoot->insert(splitRes[0].second, leftChildOff);
 				Offset rightChildOff = idxf.appendNewNode(*splitRes[1].first);
-				newRoot.insert(splitRes[1].second, rightChildOff);
+				newRoot->insert(splitRes[1].second, rightChildOff);
 
 				// Overwrite root in file
-				idxf.overwriteNode(newRoot, idxf.getRootOffset());
+				idxf.setRoot(newRoot);
 			}
 			else {
 				auto& parentid = insertPath.top();
@@ -74,11 +70,8 @@ void Tree::insert(pair<Rect, Offset> newEntry)
 		else {
 			// Node is not full but we might need to update it regardless
 			if (currNodeid.getModificationStatus()) {
-				if (insertPath.empty()) {
-					// Node that needs modification is root
-					idxf.overwriteNode(*currNodeid.parent, idxf.getRootOffset());
-				}
-				else {
+				if (!insertPath.empty()) {
+					// Node that needs modification is not root, which is already modified
 					// Find offset from parent
 					assert(!insertPath.top().parent->IsLeaf);
 					Offset off = insertPath.top().parent->getChild(insertPath.top().childIndex).second;
@@ -93,11 +86,7 @@ vector<DataFile::Entry> Tree::search(Rect searchBox)
 {
 	vector<DataFile::Entry> found;
 	stack<shared_ptr<Node>> nodeCheckStack;
-	auto root = idxf.readRoot();
-	if (root == nullptr) {
-		// Empty tree
-		return found;
-	}
+	auto root = idxf.getRoot();
 	nodeCheckStack.push(move(root));
 	while (!nodeCheckStack.empty()) {
 		shared_ptr<Node> curr = move(nodeCheckStack.top());
@@ -123,15 +112,11 @@ vector<DataFile::Entry> Tree::search(Rect searchBox)
 	return found;
 }
 
-vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
+vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, bool isDistanceKM)
 {
 	vector<DataFile::Entry> found;
 	stack<shared_ptr<Node>> nodeCheckStack;
-	auto root = idxf.readRoot();
-	if (root == nullptr) {
-		// Empty tree
-		return found;
-	}
+	auto root = idxf.getRoot();
 	nodeCheckStack.push(move(root));
 	while (!nodeCheckStack.empty()) {
 		shared_ptr<Node> curr = move(nodeCheckStack.top());
@@ -141,13 +126,7 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
 		{
 			auto currChild = curr->getChild(i);
 			// Check if the circle intersects the rectangle
-			Point closest = Point();
-			closest.x = std::clamp(searchCenter.x, currChild.first->getDownLeft().x,
-				currChild.first->getUpRight().x);
-			closest.y = std::clamp(searchCenter.y, currChild.first->getDownLeft().y,
-				currChild.first->getUpRight().y);
-			closest = closest - searchCenter;
-			if (closest.x * closest.x + closest.y * closest.y <= searchRadius * searchRadius) {
+			if (doesCircleIntersect(*currChild.first, searchCenter, searchRadius, isDistanceKM)) {
 				if (curr->IsLeaf) {
 					// If leaf, just read entry from datafile and add it to found
 					auto entry = dataf->getEntry(currChild.second);
@@ -164,12 +143,12 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius)
 	return found;
 }
 
-vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, string tag)
+vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, bool isDistanceKM, string tag)
 {
 	if (!idxf.doesTagExist(tag)) {
 		throw exception("Tag does not exist!\n");
 	}
-	auto allTags = search(searchCenter, searchRadius);
+	auto allTags = search(searchCenter, searchRadius, isDistanceKM);
 	vector<DataFile::Entry> ret;
 	for (const auto& entry : allTags) {
 		if (entry.tag == tag) {
@@ -189,6 +168,9 @@ void Tree::createTree()
 		insert(make_pair(entry.BB, Offset(i)));
 		// Add tag if not already added 
 		idxf.insertTagIfUnique(entry.tag);
+		if (i % 5000 == 0) {
+			cout << "Progress " << std::setw(10) << i << "/" << size << endl;
+		}
 	}
 }
 
@@ -220,6 +202,36 @@ void Tree::insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>
 		assert(childNode->getArrSize() >= (int)childNode->Degree);
 		insertPath.push(PathIdentifier(childNode, -1));
 	}
+}
+
+bool Tree::doesCircleIntersect(Rect rect, Point circleC, double circleR, bool isDistanceKM)
+{
+	static const double EarthRad = 6371.0;
+	static const double pi = 2 * acos(0.0);
+
+	Point closest = Point();
+	closest.x = std::clamp(circleC.x, rect.getDownLeft().x,
+		rect.getUpRight().x);
+	closest.y = std::clamp(circleC.y, rect.getDownLeft().y,
+		rect.getUpRight().y);
+	
+	if (!isDistanceKM) {
+		closest = closest - circleC;
+		return closest.x * closest.x + closest.y * closest.y <= circleR * circleR;
+	}
+	
+	const double long2 =	circleC.x * pi / 180;
+	const double long1 =	closest.x * pi / 180;
+	const double lat2 =		circleC.y * pi / 180;
+	const double lat1 =		closest.y * pi / 180;
+	const double x = (long2 - long1) * cos((lat2 + lat1) / 2);
+	const double y = (lat2 - lat1);
+	const double d_sqr = (x * x + y * y) * EarthRad * EarthRad;
+	// Find the ratio between d and circleR to get a multiplying factor
+	closest = closest - circleC;
+	const double distanceFactor_sqr = circleR * circleR / d_sqr;
+	return 1.0 <= distanceFactor_sqr;
+	
 }
 
 Tree::PathIdentifier::PathIdentifier(shared_ptr<Node> parent, int childIndex)

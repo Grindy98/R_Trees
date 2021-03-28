@@ -28,7 +28,7 @@ shared_ptr<Node> Node::deserialize(const vector<char>& bytes, unsigned degree)
 vector<char> Node::serialize(const Node& node)
 {
 	assert((unsigned)node.arrSize <= 2 * node.Degree);
-	vector<char> bytes(byteSize(node.Degree));
+	vector<char> bytes(byteSize(node.Degree), -1);
 	char* p = bytes.data();
 	serializeHeader header = { node.IsLeaf ? 1u : 0u, (unsigned)node.arrSize };
 	*reinterpret_cast<serializeHeader*>(p) = header;

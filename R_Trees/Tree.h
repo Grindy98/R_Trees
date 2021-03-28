@@ -10,8 +10,8 @@ public:
 
 	void insert(pair<Rect, Offset> newEntry);
 	vector<DataFile::Entry> search(Rect searchBox);
-	vector<DataFile::Entry> search(Point searchCenter, double searchRadius);
-	vector<DataFile::Entry> search(Point searchCenter, double searchRadius, string tag);
+	vector<DataFile::Entry> search(Point searchCenter, double searchRadius, bool isDistanceKM);
+	vector<DataFile::Entry> search(Point searchCenter, double searchRadius, bool isDistanceKM, string tag);
 
 
 private:
@@ -30,5 +30,7 @@ private:
 		bool isModified;
 	};
 	void insertWithoutSplit(pair<Rect, Offset> newEntry, stack<PathIdentifier>& insertPath);
+
+	static bool doesCircleIntersect(Rect rect, Point circleC, double circleR, bool isDistanceKM);
 };
 
