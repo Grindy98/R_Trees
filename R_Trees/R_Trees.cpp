@@ -9,8 +9,6 @@ int main() {
 
     shared_ptr<ShapeFile> shpf = make_shared<ShapeFile>("C:\\Users\\stefa\\Desktop\\romania-latest-free");
     Tree t(shpf, "indexro");
-    // Radius is NOT in Km, but in pseudo-degrees
-    // We have to use some sort of function to convert to Km from this representation
 
     // Get a random point and search for data
     int64_t size = shpf->getNumberOfElements().get();
