@@ -35,11 +35,11 @@ vector<char> Node::serialize(const Node& node)
 	p += sizeof(serializeHeader);
 
 	auto rectArr = reinterpret_cast<Rect*>(p);
-	copy(node.childrenBB.begin(), node.childrenBB.end(), rectArr);
+	copy(node.childrenBB.begin(), node.childrenBB.begin() + node.arrSize, rectArr);
 	p += sizeof(Rect) * (2 * node.Degree);
 	auto offArr = reinterpret_cast<Offset*>(p);
 
-	copy(node.childrenOrDataOffset.data(), node.childrenOrDataOffset.data() + node.arrSize, offArr);
+	copy(node.childrenOrDataOffset.begin(), node.childrenOrDataOffset.begin() + node.arrSize, offArr);
 	return bytes;
 }
 

@@ -8,7 +8,7 @@
 int main() {
 
     shared_ptr<ShapeFile> shpf = make_shared<ShapeFile>("C:\\Users\\stefa\\Desktop\\romania-latest-free");
-    Tree t(shpf, "indexro");
+    Tree t(shpf, "indexro", 25);
 
     // Get a random point and search for data
     int64_t size = shpf->getNumberOfElements().get();
