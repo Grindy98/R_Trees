@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <sstream>
 
 Tree::Tree(shared_ptr<DataFile> dataf, string idxFileNameToCreate, int degree)
 	:
@@ -146,7 +147,9 @@ vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, bo
 vector<DataFile::Entry> Tree::search(Point searchCenter, double searchRadius, bool isDistanceKM, string tag)
 {
 	if (!idxf.doesTagExist(tag)) {
-		throw exception("Tag does not exist!\n");
+		stringstream ss;
+		ss << "Tag " << tag << " does not exist!" << endl;
+		throw exception(ss.str().c_str());
 	}
 	auto allTags = search(searchCenter, searchRadius, isDistanceKM);
 	vector<DataFile::Entry> ret;

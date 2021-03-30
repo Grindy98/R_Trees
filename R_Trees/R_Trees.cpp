@@ -1,45 +1,101 @@
 #include <iostream>
 #include <chrono>
 #include <random>
-#include <ctime>
 #include "Tree.h"
 #include "ShapeFile.h"
+#include "TextFile.h"
+
+unique_ptr<Tree> createTree(string idxFilePath, string dbFilePath, bool isShapeFile) {
+    auto start = std::chrono::high_resolution_clock::now();
+    shared_ptr<DataFile> dbf; 
+    unique_ptr<Tree> ptr;
+    try
+    {
+        if (isShapeFile) {
+            dbf = make_shared<ShapeFile>(dbFilePath);
+        }
+        else {
+            dbf = make_shared<TextFile>(dbFilePath);
+        }
+        ptr = make_unique<Tree>(dbf, idxFilePath, 25);
+    }
+    catch (const std::exception& e)
+    {
+        cout << e.what();
+        system("pause");
+        exit(1);
+    }
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    cout << "Successfully created index file!" << endl;
+    std::cout << "Elapsed time: " << elapsed.count() << " s" << endl;
+    return ptr;
+}
+
+unique_ptr<Tree> readTree(string idxFilePath, string dbFilePath, bool isShapeFile) {
+    shared_ptr<DataFile> dbf;
+    unique_ptr<Tree> ptr;
+    try
+    {
+        if (isShapeFile) {
+            dbf = make_shared<ShapeFile>(dbFilePath);
+        }
+        else {
+            dbf = make_shared<TextFile>(dbFilePath);
+        }
+        ptr = make_unique<Tree>(dbf, idxFilePath);
+    }
+    catch (const std::exception& e)
+    {
+        cout << e.what();
+        system("pause");
+        exit(1);
+    }
+    cout << "Successfully opened index file!" << endl;
+    return ptr;
+}
+
+void findEntries(Tree& tree, Point coords, double range, bool isKM, string tag) {
+    vector<DataFile::Entry> res;
+    try {
+        res = tree.search(coords, range, isKM, tag);
+    }
+    catch (const std::exception& e)
+    {
+        cout << e.what();
+        system("pause");
+        exit(1);
+    }
+    for (int i = 0; i < res.size(); i++) {
+        std::cout << res[i].toString(i + 1) << endl;
+    }
+}
 
 int main() {
 
-    shared_ptr<ShapeFile> shpf = make_shared<ShapeFile>("C:\\Users\\stefa\\Desktop\\romania-latest-free");
-    Tree t(shpf, "indexro", 25);
+    // Create / Read parameters
+    bool willCreate = false;
+    bool isShapeFileDir = true;
+    string pathToDir = "D:\\Uni_Stuff\\Y2\\ADA\\ExtraProjects\\R_Trees\\romania-latest-free";
+    string pathToIdx = "D:\\Uni_Stuff\\Y2\\ADA\\ExtraProjects\\R_Trees\\idxro";
 
-    // Get a random point and search for data
-    int64_t size = shpf->getNumberOfElements().get();
-
-    uniform_int_distribution<long long> unif(0, (int64_t)size - 1);
-    default_random_engine re;
-    re.seed(time(0));
-
-    auto entry = shpf->getEntry(Offset(unif(re)));
-
-    // In km
+    // Find parameters
+    Point timisoaraPosition = { 21.2087, 45.7489 };
+    bool isKM = true;
     double radius = 1;
-    Point timisoaraCoords = {21.226678, 45.766035 };
-    Point resitaCoords = { 21.8821, 45.3050 };
+    string tag = "pharmacy";
 
-    Point toSearch = timisoaraCoords;
-
-    auto res = t.search(toSearch, radius, true, "pharmacy");
-
-    std::cout << "Original point is: " <<
-        toSearch.x << ", " << toSearch.y << endl;
-    std::cout << "Radius of search is: " << radius << endl;
-    std::cout << endl;
-
-    for (const auto& entry : res) {
-        if (entry.name.empty()) {
-            continue;
-        }
-        std::cout << entry.name << ", " << entry.tag << " | " <<
-            entry.BB.getDownLeft().x << ", " << entry.BB.getDownLeft().y << endl;
+    unique_ptr<Tree> tree;
+    if (willCreate) {
+        tree = createTree(pathToIdx, pathToDir, isShapeFileDir);
     }
+    else {
+        tree = readTree(pathToIdx, pathToDir, isShapeFileDir);
+    }
+
+    system("pause");
+
+    findEntries(*tree, timisoaraPosition, radius, isKM, tag);
 
     system("pause");
 
